@@ -60,3 +60,4 @@ dkms.conf
 
 examples/*.asm
 examples/*.txt
+examples/code.exe.i64
