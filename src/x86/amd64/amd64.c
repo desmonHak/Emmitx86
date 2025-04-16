@@ -113,6 +113,7 @@ void EmitIndirect(shellcode_t *code, uint8_t rx, Regs_x64 base) {
  */
 void EmitDiplaced(shellcode_t *code, const uint8_t rx, 
     const uint32_t displacement) {
+
     EmitModRm(code, INDIRECT, rx, RSP);
     EmitModRm(code, x1, RSP, RBP);
     call(code, Emit32, displacement);       // añadir disp32
@@ -180,7 +181,9 @@ void EmitIndirectDisplaced(shellcode_t *code, uint8_t rx,
  */
 void EmitIndirectIndexed(shellcode_t *code, uint8_t rx, Regs_x64 
     base, Regs_x64 index, Scale_x64 scale) {
-    
+    assert_code((base  & 7) != RBP, code, EmitIndirectIndexed_ERROR, 
+        return;
+    );
     EmitModRm(code, INDIRECT, rx, RSP);
     EmitModRm(code, scale, base, index); // byte SIB
 }

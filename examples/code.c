@@ -32,13 +32,25 @@ int main() {
             EmitADD_M(ptr_sc);
             EmitDirect(ptr_sc, destination, source);
 
-            EmitRexIndexed(ptr_sc, destination, source, destination);
-            EmitADD_R(ptr_sc);
-            EmitIndirectIndexed(ptr_sc, destination, source, destination, x4);
+            if ((source  & 7)  != RBP){
+                EmitRexIndexed(ptr_sc, destination, source, destination);
+                EmitADD_R(ptr_sc);
+                EmitIndirectIndexed(ptr_sc, destination, source, destination, x4);
 
-            EmitRexIndexed(ptr_sc, destination, source, destination);
-            EmitADD_M(ptr_sc);
-            EmitIndirectIndexed(ptr_sc, destination, source, destination, x8);
+                EmitRexIndexed(ptr_sc, destination, source, destination);
+                EmitADD_M(ptr_sc);
+                EmitIndirectIndexed(ptr_sc, destination, source, destination, x8);
+            } else {
+                EmitRexIndexed(ptr_sc, destination, source, destination);
+                EmitADD_R(ptr_sc);
+                EmitIndirectIndexedByteDisplaced(ptr_sc, destination, source, 
+                    destination, x4, 0x87);
+
+                EmitRexIndexed(ptr_sc, destination, source, destination);
+                EmitADD_M(ptr_sc);
+                EmitIndirectIndexedByteDisplaced(ptr_sc, destination, source, 
+                    destination, x4, 0x87);
+            }
 
             if ((source & 7) != RSP && (source  & 7)  != RBP) {
                 // R11? R12?
@@ -73,20 +85,21 @@ int main() {
             }
             if (ptr_sc->err != 0) {
                 printf("Error con codigo: %d\n", ptr_sc->err);
-                return ptr_sc->err;
+                goto jump_exit_loops;
             }
         }
     }
 
-
+    jump_exit_loops:
     call(ptr_sc, dump);
 
     // s
     FILE *f = fopen("shellcode.bin", "wb");
     fwrite(ptr_sc->code, ptr_sc->size, 1, f);
     fclose(f);
- 
+
+    int exit_code = ptr_sc->err;
     call(ptr_sc, free);
     puts("Exit...");
-    return 0;
+    return exit_code;
 }
