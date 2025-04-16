@@ -101,7 +101,7 @@ int main() {
     jump_exit_loops:
     call(ptr_sc, dump);
 
-    // s
+    // objdump -D -b binary -M intel -m i386:x86-64 shellcode.bin > output.asm
     FILE *f = fopen("shellcode.bin", "wb");
     fwrite(ptr_sc->code, ptr_sc->size, 1, f);
     fclose(f);
