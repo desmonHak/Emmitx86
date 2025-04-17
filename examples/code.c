@@ -7,9 +7,13 @@ int main() {
     ptr_sc->capacity = 16;
     call(ptr_sc, expand);
 
+    EMIT_D_I(ptr_sc, ADD, 0x12345678, 0xDEADBEEF)
+
     for (Regs_x64 destination = RAX; destination <= R15; destination++) {
+        EMIT_X_R(ptr_sc, MUL, destination);
         EMIT_R_I(ptr_sc, ADD, destination, 0x12345678);
         if ((destination  & 7)  != RSP){
+
             EMIT_MD_I(ptr_sc, ADD, destination, 0x12, 0xDEADBEEF);
             EMIT_MD1_I(ptr_sc, ADD, destination, 0x12345678, 0xDEADBEEF);   
         }
@@ -18,7 +22,9 @@ int main() {
         }
 
         EMIT_R_RIPD(ptr_sc, ADD, destination, 0x12345678);
-        EMIT_R_D(ptr_sc, ADD, destination, 0x12345678)
+        EMIT_R_D(ptr_sc, ADD, destination, 0x12345678);
+        EMIT_RIPD_R(ptr_sc, ADD, 0x12345678, destination);
+        EMIT_D_R(ptr_sc, ADD, 0x12345678, destination);
 
         for (Regs_x64 source = RAX; source <= R15; source++) {
             EMIT_R_R(ptr_sc, ADD, destination, source);
@@ -51,6 +57,9 @@ int main() {
                 EMIT_R_MD(ptr_sc, ADD, destination, source, 0x12345678);
             }
             if ((destination & 7) != RSP && (destination  & 7)  != RBP){
+                EMIT_X_MD1(ptr_sc, MUL, destination,  0x12);
+                EMIT_X_MD(ptr_sc, MUL, destination,  0x12345678)
+                EMIT_X_M(ptr_sc, MUL, destination);
                 EMIT_M_R(ptr_sc, ADD, destination, source)
                 EMIT_MD1_R(ptr_sc, ADD, destination, 0x12, source);
                 EMIT_MD_R(ptr_sc, ADD, destination, 0x12345678, source); 
