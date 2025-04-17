@@ -13,7 +13,6 @@ int main() {
         EMIT_X_R(ptr_sc, MUL, destination);
         EMIT_R_I(ptr_sc, ADD, destination, 0x12345678);
         if ((destination  & 7)  != RSP){
-
             EMIT_MD_I(ptr_sc, ADD, destination, 0x12, 0xDEADBEEF);
             EMIT_MD1_I(ptr_sc, ADD, destination, 0x12345678, 0xDEADBEEF);   
         }
@@ -32,9 +31,14 @@ int main() {
             // el index no puede ser RBP o se realiza un disp32 en el SIB,
             // mismo caso con la base para la funcion EmitIndirectIndexed
             if ((source  & 7)  != RBP && (destination & 7) != RBP) {
+                EMIT_X_SIB(ptr_sc, MUL, destination, x4, R8)
+                EMIT_X_SIBD1(ptr_sc, MUL, destination, x4, R8, 0x12)
+                EMIT_X_SIBD(ptr_sc, MUL, destination, x4, R8, 0x12345678)
                 EMIT_R_SIB(ptr_sc, ADD, destination, source, x4, destination);
                 EMIT_SIB_R(ptr_sc, ADD, destination, x4, source, source);
             }
+            EMIT_SIBD_R(ptr_sc, ADD, destination, x4, source, 
+                0x12345678, source);
             
             if ((source  & 7)  != RBP){
                 EMIT_R_SIBD1(ptr_sc, ADD, destination, source, 
@@ -47,8 +51,7 @@ int main() {
                 EMIT_SIBD1_R(ptr_sc, ADD, destination, x4, source, 
                     0x12, source);
 
-                EMIT_SIBD_R(ptr_sc, ADD, destination, x4, source, 
-                    0x12345678, source);
+               
             }
 
             if ((source & 7) != RSP && (source  & 7)  != RBP) {
