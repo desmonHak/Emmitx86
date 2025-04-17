@@ -53,6 +53,7 @@ typedef struct shellcode_t {
 
 shellcode_t init_shellcode();
 
+
 #define op_reg(operation) Emit_##operation##_R
 #define OP1R(operation, opcode)                              \
 void static inline op_reg(operation)(shellcode_t* code) {    \
@@ -65,15 +66,20 @@ void static inline op_mem(operation)(shellcode_t* code) {    \
     call(code, Emit8, opcode);                               \
 }
 
+#define extension(operation) extension_##operation##_I
 #define op_inmed(operation) Emit_##operation##_I
-#define OP1I(operation, opcode)                              \
+#define OP1I(operation, opcode, extension_val)                   \
 void static inline op_inmed(operation)(shellcode_t* code) {  \
     call(code, Emit8, opcode);                               \
-}
+}                                                            \
+enum { extension(ADD) = extension_val};
+
+// instrucciones:
 
 OP1M(ADD, 0x01)
 OP1R(ADD, 0x03)
-OP1I(ADD, 0x81)
+OP1I(ADD, 0x81, 0x00)
+
 
 /* 
  * EMIT_R_R(ADD, RAX, RCX):             add       rax,             rcx 
@@ -89,66 +95,132 @@ OP1I(ADD, 0x81)
  * @brief EMIT_R_R(ADD, RAX, RCX):             add       rax,             rcx 
  * 
  */
-#define EMIT_R_R(code, operation, destionation, source) \
+#define EMIT_R_R(ptr_sc, operation, destination, source) \
     EmitRex(ptr_sc, destination, source);               \
     op_reg(operation)(ptr_sc);                          \
     EmitDirect(ptr_sc, destination, source);            
 
-#define EMIT_R_M(code, operation, destionation, source) \
+#define EMIT_R_M(ptr_sc, operation, destination, source) \
     EmitRex(ptr_sc, destination, source);               \
     op_reg(operation)(ptr_sc);                          \
     EmitIndirect(ptr_sc, destination, source);         
 
-#define EMIT_R_MD1(code, operation, destionation, source, displacement) \
+#define EMIT_R_MD1(ptr_sc, operation, destination, source, source_displacement) \
     EmitRex(ptr_sc, destination, source);               \
     op_reg(operation)(ptr_sc);                          \
-    EmitIndirectByteDisplaced(ptr_sc, destination, source, displacement);      
+    EmitIndirectByteDisplaced(ptr_sc, destination, source, source_displacement);      
 
-#define EMIT_R_MD(code, operation, destionation, source, displacement) \
+#define EMIT_R_MD(ptr_sc, operation, destination, source, source_displacement) \
     EmitRex(ptr_sc, destination, source);               \
     op_reg(operation)(ptr_sc);                          \
-    EmitIndirectDisplaced(ptr_sc, destination, source, displacement);      
+    EmitIndirectDisplaced(ptr_sc, destination, source, source_displacement);      
 
-#define EMIT_M_R(code, operation, destionation, source, displacement) \
- EmitRex(ptr_sc, destination, source); \
- op_reg(operation)(ptr_sc); \
- EmitIndirectDisplaced(ptr_sc, destination, source);
+#define EMIT_R_SIB(ptr_sc, operation, destination, source_base, source_scale, \
+    source_index) \
+    EmitRexIndexed(ptr_sc, destination, source_base, source_index); \
+    op_reg(operation)(ptr_sc); \
+    EmitIndirectIndexed(ptr_sc, destination, source_base, \
+        source_index, source_scale);
 
-#define EMIT_M_I(code, operation, destionation, source) \
- EmitRex(ptr_sc, destination, source); \
- op_reg(operation)(ptr_sc); \
- EmitIndirectDisplacedImm(ptr_sc, destination, source);
+#define EMIT_R_SIBD1(ptr_sc, operation, destination, source_base, source_scale, \
+        source_index, source_displacement) \
+    EmitRexIndexed(ptr_sc, destination, source_base, source_index); \
+    op_reg(operation)(ptr_sc); \
+    EmitIndirectIndexedByteDisplaced(ptr_sc, destination, source_base, \
+        source_index, source_scale, source_displacement);
 
-#define EMIT_R_I(code, operation, destionation, source) \
- EmitRex(ptr_sc, destination, source); \
- op_reg(operation)(ptr_sc); \
- EmitDirectImm(ptr_sc, destination, source);
-
-#define EMIT_SIB_R(code, operation, destionation, index, source) \
- EmitRex(ptr_sc, destination, source); \
- op_reg(operation)(ptr_sc); \
- EmitIndirectIndexedDisplaced(ptr_sc, destination, index, source);
-
-#define EMIT_R_SIB(code, operation, destionation, index, source) \
- EmitRex(ptr_sc, destination, source); \
- op_reg(operation)(ptr_sc); \
- EmitIndirectIndexedDisplaced(ptr_sc, destination, index, source);
-
-#define EMIT_SIB_M(code, operation, destionation, index, source) \
- EmitRex(ptr_sc, destination, source); \
- op_reg(operation)(ptr_sc); \
- EmitIndirectIndexedDisplaced(ptr_sc, destination, index, source);
-
-#define EMIT_M_SIB(code, operation, destionation, index, source) \
- EmitRex(ptr_sc, destination, source); \
- op_reg(operation)(ptr_sc); \
- EmitIndirectIndexedDisplaced(ptr_sc, destination, index, source);
-
-#define EMIT_SIB_I(code, operation, destionation, index, source) \
- EmitRex(ptr_sc, destination, source); \
- op_reg(operation)(ptr_sc); \
- EmitIndirectIndexedDisplacedImm(ptr_sc, destination, index, source);
+#define EMIT_R_SIBD(ptr_sc, operation, destination, source_base, source_scale, \
+        source_index, source_displacement) \
+    EmitRexIndexed(ptr_sc, destination, source_base, source_index); \
+    op_reg(operation)(ptr_sc); \
+    EmitIndirectIndexedDisplaced(ptr_sc, destination, source_base, \
+        source_index, source_scale, source_displacement);
 
 
-    
+#define EMIT_M_R(ptr_sc, operation, destination, source)  \
+    EmitRex(ptr_sc, source, destination);               \
+    op_mem(operation)(ptr_sc);                          \
+    EmitIndirect(ptr_sc, source, destination);         
+
+#define EMIT_MD1_R(ptr_sc, operation, destination, destination_displacement, source) \
+    EmitRex(ptr_sc, source, destination);               \
+    op_mem(operation)(ptr_sc);                          \
+    EmitIndirectByteDisplaced(ptr_sc, source, destination, destination_displacement);  
+
+#define EMIT_MD_R(ptr_sc, operation, destination, destination_displacement, source) \
+    EmitRex(ptr_sc, source, destination);               \
+    op_mem(operation)(ptr_sc);                          \
+    EmitIndirectDisplaced(ptr_sc, source, destination, destination_displacement);     
+
+#define EMIT_SIB_R(ptr_sc, operation, destination_base, destination_scale, \
+    destination_index, source)  \
+    EmitRex(ptr_sc, destination_base, destination_index);               \
+    op_mem(operation)(ptr_sc);                          \
+    EmitIndirectIndexed(ptr_sc, source, destination_base, destination_index, \
+        destination_scale);   
+
+#define EMIT_SIBD1_R(ptr_sc, operation, destination_base, destination_scale, \
+    destination_index, destination_displacement, source)  \
+    EmitRex(ptr_sc, destination_base, destination_index);               \
+    op_mem(operation)(ptr_sc);                          \
+    EmitIndirectIndexedByteDisplaced(ptr_sc, source, destination_base, destination_index, \
+        destination_scale, destination_displacement);   
+
+#define EMIT_SIBD_R(ptr_sc, operation, destination_base, destination_scale, \
+    destination_index, destination_displacement, source)  \
+    EmitRex(ptr_sc, destination_base, destination_index);               \
+    op_mem(operation)(ptr_sc);                          \
+    EmitIndirectIndexedDisplaced(ptr_sc, source, destination_base, destination_index, \
+        destination_scale, destination_displacement);   
+
+#define EMIT_R_I(ptr_sc, operation, destination, source_inmmediate) \
+    EmitRex(ptr_sc, 0, destination); \
+    op_inmed(operation)(ptr_sc);     \
+    EmitDirect(ptr_sc, extension(operation), destination); \
+    call(ptr_sc, Emit32, source_inmmediate);
+
+#define EMIT_M_I(ptr_sc, operation, destination, source_inmmediate) \
+    EmitRex(ptr_sc, 0, destination); \
+    op_inmed(operation)(ptr_sc);     \
+    EmitIndirect(ptr_sc, extension(operation), destination); \
+    call(ptr_sc, Emit32, source_inmmediate);
+
+#define EMIT_MD1_I(ptr_sc, operation, destination, destination_displacement, \
+    source_inmmediate) EmitRex(ptr_sc, 0, destination); \
+    op_inmed(operation)(ptr_sc);     \
+    EmitIndirectDisplaced(ptr_sc, extension(operation), destination, \
+    destination_displacement); \
+    call(ptr_sc, Emit32, source_inmmediate);
+
+#define EMIT_MD_I(ptr_sc, operation, destination, destination_displacement, \
+    source_inmmediate) EmitRex(ptr_sc, 0, destination); \
+    op_inmed(operation)(ptr_sc);     \
+    EmitIndirectByteDisplaced(ptr_sc, extension(operation), destination, \
+    destination_displacement); \
+    call(ptr_sc, Emit32, source_inmmediate);
+
+#define EMIT_SIB_I(ptr_sc, operation, destination_base, destination_scale, \
+    destination_index, source_inmmediate) \
+    EmitRexIndexed(ptr_sc, 0, destination_base, destination_index); \
+    op_inmed(operation)(ptr_sc);     \
+    EmitIndirectIndexed(ptr_sc, extension(operation), destination_base, \
+        destination_index, destination_scale); \
+    call(ptr_sc, Emit32, source_inmmediate);
+
+#define EMIT_SIBD1_I(ptr_sc, operation, destination_base, destination_scale, \
+    destination_index, destination_displacement, source_inmmediate) \
+    EmitRexIndexed(ptr_sc, 0, destination_base, destination_index); \
+    op_inmed(operation)(ptr_sc);     \
+    EmitIndirectIndexedByteDisplaced(ptr_sc, extension(operation), destination_base, \
+        destination_index, destination_scale, destination_displacement); \
+    call(ptr_sc, Emit32, source_inmmediate);
+
+#define EMIT_SIBD_I(ptr_sc, operation, destination_base, destination_scale, \
+    destination_index, destination_displacement, source_inmmediate) \
+    EmitRexIndexed(ptr_sc, 0, destination_base, destination_index); \
+    op_inmed(operation)(ptr_sc);     \
+    EmitIndirectIndexedDisplaced(ptr_sc, extension(operation), destination_base, \
+        destination_index, destination_scale, destination_displacement); \
+    call(ptr_sc, Emit32, source_inmmediate);
+
 #endif

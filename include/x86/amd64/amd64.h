@@ -252,9 +252,12 @@ static inline void EmitIndirectDisplaced(shellcode_t *code, uint8_t rx,
  * @param index 
  * @param scale 
  */
-static inline void EmitIndirectIndexed(shellcode_t *code, uint8_t rx, Regs_x64 
-    base, Regs_x64 index, Scale_x64 scale) {
+static inline void EmitIndirectIndexed(shellcode_t *code, uint8_t rx, 
+    Regs_x64 base, Regs_x64 index, Scale_x64 scale) {
     assert_code((base  & 7) != RBP, code, EmitIndirectIndexed_ERROR, 
+        return;
+    );
+    assert_code((index  & 7) != RBP, code, EmitIndirectIndexed_ERROR, 
         return;
     );
     EmitModRm(code, INDIRECT, rx, RSP);
@@ -296,7 +299,7 @@ static inline void EmitIndirectIndexedDisplaced(shellcode_t *code,
     Scale_x64 scale, uint32_t displacement) {
 
     EmitModRm(code, DISPLACED_INDIRECT, rx, RSP);
-    EmitModRm(code, scale, index, base); // byte SIB
+    EmitModRm(code, scale, index, base);    // byte SIB
     call(code, Emit32, displacement);       // añadir disp32
 }
 
