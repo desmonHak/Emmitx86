@@ -100,10 +100,20 @@ OP1I(ADD, 0x81, 0x00)
     op_reg(operation)(ptr_sc);                          \
     EmitDirect(ptr_sc, destination, source);            
 
+#define EMIT_R_D(ptr_sc, operation, destination, source_displacement) \
+    EmitRex(ptr_sc, destination, 0);               \
+    op_reg(operation)(ptr_sc);                          \
+    EmitDiplaced(ptr_sc, destination, source_displacement);            
+
 #define EMIT_R_M(ptr_sc, operation, destination, source) \
     EmitRex(ptr_sc, destination, source);               \
     op_reg(operation)(ptr_sc);                          \
     EmitIndirect(ptr_sc, destination, source);         
+
+#define EMIT_R_RIPD(ptr_sc, operation, destination, source_rip_displacement) \
+    EmitRex(ptr_sc, destination, 0);                              \
+    op_reg(operation)(ptr_sc);                                    \
+    EmitIndirectDisplacedRip(ptr_sc, destination, source_rip_displacement);  
 
 #define EMIT_R_MD1(ptr_sc, operation, destination, source, source_displacement) \
     EmitRex(ptr_sc, destination, source);               \

@@ -248,8 +248,13 @@ static inline void EmitIndirectDisplaced(shellcode_t *code, uint8_t rx,
  * 
  * @param code 
  * @param rx 
- * @param base 
- * @param index 
+ * @param base Base a codificar. 
+ * @param index indice a codificar. En caso de que el indice sea RSP, se 
+ * estara codificando en lugar de [base + 4 * index ], se codificara para todos
+ * los registros base como [base + 4 * riz ] donde "riz" sera 0, por tanto se 
+ * quedara como [base], exceptuando que la base sea RBP o R13, en ese caso,
+ * se el campo pasa a codificarse como un disp32, lo cual no pertencera a esta 
+ * funcion. 
  * @param scale 
  */
 static inline void EmitIndirectIndexed(shellcode_t *code, uint8_t rx, 
@@ -271,7 +276,10 @@ static inline void EmitIndirectIndexed(shellcode_t *code, uint8_t rx,
  * @param code 
  * @param rx 
  * @param base 
- * @param index 
+ * @param index indice a codificar. En caso de que el indice sea RSP, se 
+ * estara codificando en lugar de [base + 4 * index + disp8], se codificara para
+ * todos los registros base como [base + 4 * riz + disp8] donde "riz" sera 0,
+ * por tanto se quedara como [base + disp8]
  * @param scale 
  * @param displacement 
  */
@@ -279,7 +287,7 @@ static inline void EmitIndirectIndexedByteDisplaced(shellcode_t *code,
     uint8_t rx, Regs_x64 base, Regs_x64 index, 
     Scale_x64 scale, uint8_t displacement) {
     EmitModRm(code, BYTE_DISPLACED_INDIRECT, rx, RSP);
-    EmitModRm(code, scale, index, base); // byte SIB
+    EmitModRm(code, scale, index, base);    // byte SIB
     call(code, Emit8, displacement);        // añadir disp8
 }
 
@@ -290,7 +298,10 @@ static inline void EmitIndirectIndexedByteDisplaced(shellcode_t *code,
  * @param code 
  * @param rx 
  * @param base 
- * @param index 
+ * @param index indice a codificar. En caso de que el indice sea RSP, se 
+ * estara codificando en lugar de [base + 4 * index + disp32], se codificara 
+ * para todos los registros base como [base + 4 * riz + disp32] donde "riz"sera 
+ * 0, por tanto se quedara como [base + disp32]
  * @param scale 
  * @param displacement 
  */
