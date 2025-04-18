@@ -81,7 +81,67 @@ void static inline op_x(operation)(shellcode_t* code) {  \
 }                                                            \
 enum { extension_##operation##_X = extension_val};
 
+// https://mailund.dk/posts/macro-metaprogramming/
+// macro para las instrucciones de longitud de opcode variable las cuales
+// no son necesarias de procesar(como cpuid que se puede emitir sin ningun pro-
+// cesamiento)
+#define op_inm(operation) Emit_##operation##_INM
+
+// macros recursivas para poder aplicar una func a cada arg de una macro dada
+// se necesita tabtas de estas macros como args queremos soportar en nuestra 
+// macro
+#define APPLY_TO_EACH_1(f, x) f(x)
+#define APPLY_TO_EACH_2(f, x, ...) f(x) APPLY_TO_EACH_1(f, __VA_ARGS__)
+#define APPLY_TO_EACH_3(f, x, ...) f(x) APPLY_TO_EACH_2(f, __VA_ARGS__)
+#define APPLY_TO_EACH_4(f, x, ...) f(x) APPLY_TO_EACH_3(f, __VA_ARGS__)
+#define APPLY_TO_EACH_5(f, x, ...) f(x) APPLY_TO_EACH_4(f, __VA_ARGS__)
+
+// Esta macro elige la correcta según el número de argumentos
+#define GET_MACRO(_1,_2,_3,_4,_5,NAME,...) NAME
+// aplicar la funcion a cada argumento segun se indique:
+#define APPLY_TO_EACH(f, ...) \
+GET_MACRO(__VA_ARGS__, APPLY_TO_EACH_5, APPLY_TO_EACH_4, APPLY_TO_EACH_3, \
+    APPLY_TO_EACH_2, APPLY_TO_EACH_1)(f, __VA_ARGS__)
+
+// la funcion a la que aplicaremos a cada arg de nuestra macro
+#define procesar(x) call(code, Emit8, x);
+#define OP1INM(operation, ...) \
+void static inline op_inm(operation)(shellcode_t* code) {  \
+    APPLY_TO_EACH(procesar, __VA_ARGS__);                    \
+}
+
 // instrucciones:
+#define EMIT_INM(ptr_sc, operation) op_inm(operation)(ptr_sc)
+OP1INM(CPUID, 0x0F, 0xA2)
+OP1INM(CLC, 0xF8)
+OP1INM(STC, 0xF9)
+OP1INM(CLI, 0xFA)
+OP1INM(STI, 0xFB)
+OP1INM(CLD, 0xFC)
+OP1INM(STD, 0xFD)
+
+OP1INM(INVD,   0x0F, 0x08)
+OP1INM(WBINVD, 0x0F, 0x09) // Undefined Instruction
+OP1INM(UD2,    0x0F, 0x0B)
+OP1INM(NOP,    0x90)
+OP1INM(FWAIT,  0x9B)
+OP1INM(RETN,   0xC3)
+OP1INM(RETF,   0xCB)
+OP1INM(UD1,    0xD6)
+OP1INM(FDECSTP,0xD9, 0xF6)
+OP1INM(FINCSTP,0xD9, 0xF7)
+
+OP1INM(HLT,    0xF4)
+OP1INM(CMC,    0xF4)
+
+// SEE2 set
+OP1INM(PAUSE,    0xF3, 0x90)
+
+// VMX set
+OP1INM(VMCALL,   0x0F, 0x01, 0xC1)
+OP1INM(VMLAUNCH, 0x0F, 0x01, 0xC2)
+OP1INM(VMRESUME, 0x0F, 0x01, 0xC3)
+OP1INM(VMXOFF,   0x0F, 0x01, 0xC4)
 
 OP1M(ADD, 0x01)
 OP1R(ADD, 0x03)

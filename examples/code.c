@@ -7,6 +7,15 @@ int main() {
     ptr_sc->capacity = 16;
     call(ptr_sc, expand);
 
+
+    EMIT_INM(ptr_sc, CLC);
+    EMIT_INM(ptr_sc, STC);
+    EMIT_INM(ptr_sc, CLI);
+    EMIT_INM(ptr_sc, STI);
+    EMIT_INM(ptr_sc, CLD);
+    EMIT_INM(ptr_sc, STD);
+    EMIT_INM(ptr_sc, CPUID);
+
     EMIT_D_I(ptr_sc, ADD, 0x12345678, 0xDEADBEEF)
 
     for (Regs_x64 destination = RAX; destination <= R15; destination++) {
@@ -19,6 +28,7 @@ int main() {
         if ((destination & 7) != RBP) {
             EMIT_SIB_I(ptr_sc, ADD, destination, x4, R8, 0xDEADBEEF);
         }
+        
 
         EMIT_R_RIPD(ptr_sc, ADD, destination, 0x12345678);
         EMIT_R_D(ptr_sc, ADD, destination, 0x12345678);
