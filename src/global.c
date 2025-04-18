@@ -4,20 +4,27 @@
 #include "global.h"
 
 static void Emit8(shellcode_t* code, uint8_t byte) {
-    if (code->capacity <= code->size + 1) {
+    if (code->capacity <= code->size + sizeof(uint8_t)) {
         call(code, expand);
     }
     code->code[code->size++] = byte;
 }
 
 static void Emit32(shellcode_t* code, uint32_t bytes) {
-    if (code->capacity <= code->size + 4) {
+    if (code->capacity <= code->size + sizeof(uint32_t)) {
         call(code, expand);
     }
     *((uint32_t *)&(code->code[code->size])) = bytes;
-    code->size += 4;
+    code->size += sizeof(uint32_t);
 }
 
+static void Emit64(shellcode_t* code, uint64_t bytes) {
+    if (code->capacity <= code->size + sizeof(uint64_t)) {
+        call(code, expand);
+    }
+    *((uint64_t *)&(code->code[code->size])) = bytes;
+    code->size += sizeof(uint64_t);
+}
 
 // Función expand: redimensiona el buffer 'code'
 static void expand(shellcode_t* code) {
@@ -72,6 +79,7 @@ shellcode_t init_shellcode() {
     return (shellcode_t) {
         .capacity = 0,
         .code     = NULL,
+        .Emit64   = Emit64,
         .Emit32   = Emit32,
         .Emit8    = Emit8,
         .err      = 0,

@@ -46,6 +46,7 @@ typedef struct shellcode_t {
 
     void (*Emit8 )(struct shellcode_t* code, uint8_t  byte);
     void (*Emit32)(struct shellcode_t* code, uint32_t bytes);
+    void (*Emit64)(struct shellcode_t* code, uint64_t bytes);
     void (*expand)(struct shellcode_t* code);
     void (*free  )(struct shellcode_t* code);
     void (*dump  )(const struct shellcode_t *shell);
@@ -53,6 +54,52 @@ typedef struct shellcode_t {
 
 shellcode_t init_shellcode();
 
+
+
+
+typedef enum ConditionCode {
+    O,
+    NO,
+    B,
+    NB,
+    E,
+    NE,
+    NA,
+    A,
+    S,
+    NS,
+    P,
+    NP,
+    L,
+    NL,
+    NG,
+    G,
+    NAE = B,
+    C = B,
+    AE = NB,
+    NC = NB,
+    Z = E,
+    NZ = NE,
+    BE = NA,
+    NBE = A,
+    PE = P,
+    PO = NP,
+    NGE = L,
+    GE = NL,
+    LE = NG,
+    NLE = G
+} ConditionCode;
+
+/**
+ * @brief Para los saltos condicionales:
+ * 
+ */
+#define op_cond(operation) Emit_##operation##_C_I
+#define OP2CI(operation, opcode) \
+void static inline op_cond(operation)(shellcode_t* code, ConditionCode condition_code) { \
+    call(code, Emit8, 0x0F); \
+    call(code, Emit8, opcode + condition_code); \
+}
 
 #define op_reg(operation) Emit_##operation##_R
 #define OP1R(operation, opcode)                              \
@@ -143,6 +190,10 @@ OP1INM(VMLAUNCH, 0x0F, 0x01, 0xC2)
 OP1INM(VMRESUME, 0x0F, 0x01, 0xC3)
 OP1INM(VMXOFF,   0x0F, 0x01, 0xC4)
 
+
+OP1R(MOV, 0x8B)
+OP1M(MOV, 0x89)
+
 OP1M(ADD, 0x01)
 OP1R(ADD, 0x03)
 OP1I(ADD, 0x81, 0x00)
@@ -154,6 +205,42 @@ OP1I(AND, 0x81, 0x04)
 OP1X(MUL, 0xF7, 0x04)
 // EMIT_X_R(MUL, RBX) // mul rbx
 // EMIT_X_M(MUL, RBX) // mul [rbx]
+
+// JMP incondicional:
+OP1I(JMP, 0xE9, 0x00)
+
+// JCC(Jump-conditions) condicionales
+OP2CI(J, 0x80)
+
+
+// casos mov especiales:
+#define EMIT_I(ptr_sc, operation, source_inmmediate) \
+    EmitRex(ptr_sc, 0, 0); \
+    op_inmed(operation)(ptr_sc); \
+    call(ptr_sc, Emit32, source_inmmediate);
+
+#define EMIT_MOV_R_I(ptr_sc, destination, source_inmmediate) \
+    EmitRex(ptr_sc, destination, 0); \
+    call(ptr_sc, Emit8, 0xB8); \
+    call(ptr_sc, Emit64, source_inmmediate);
+
+#define EMIT_MOV_RAX_OFF(ptr_sc, source_offset) \
+    EmitRex(ptr_sc, 0, 0); \
+    call(ptr_sc, Emit8, 0xA1); \
+    call(ptr_sc, Emit64, source_offset);
+
+#define EMIT_MOV_OFF_RAX(ptr_sc, destination_offset) \
+    EmitRex(ptr_sc, 0, 0); \
+    call(ptr_sc, Emit8, 0xA3); \
+    call(ptr_sc, Emit64, destination_offset);
+
+/**
+ * @brief Emisor para saltos condicionales
+ * 
+ */
+#define EMIT_C_I(ptr_sc, operation, condition_code, source_immediate) \
+    op_cond(operation)(ptr_sc, condition_code); \
+    call(ptr_sc, Emit32, source_immediate);
 
 /* 
  * EMIT_R_R(ADD, RAX, RCX):             add       rax,             rcx 

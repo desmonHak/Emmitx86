@@ -7,6 +7,15 @@ int main() {
     ptr_sc->capacity = 16;
     call(ptr_sc, expand);
 
+    EMIT_MOV_R_I(ptr_sc, RBX, 0x12345678deadbeefull);
+    EMIT_MOV_RAX_OFF(ptr_sc, 0x12345678deadbeefull);
+    EMIT_MOV_OFF_RAX(ptr_sc, 0x12345678deadbeefull);
+    EMIT_R_R(ptr_sc, MOV, RAX, R10);
+    EMIT_M_R(ptr_sc, MOV, RAX, R10);
+    EMIT_I(ptr_sc, JMP, 0x1234);
+    EMIT_C_I(ptr_sc, J, NZ, 0x1234);
+    EMIT_C_I(ptr_sc, J, NZ, 0x1234);
+    EMIT_C_I(ptr_sc, J, NZ, 0x1234);
 
     EMIT_INM(ptr_sc, CLC);
     EMIT_INM(ptr_sc, STC);
