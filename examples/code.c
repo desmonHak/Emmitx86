@@ -1,6 +1,6 @@
 #include "x86/amd64/amd64.h"
 
-int main() {
+int main(int argc, char **argv) {
 
     shellcode_t my_shellcode = init_shellcode();
     shellcode_t *ptr_sc = &my_shellcode;

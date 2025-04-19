@@ -198,6 +198,14 @@ OP1M(ADD, 0x01)
 OP1R(ADD, 0x03)
 OP1I(ADD, 0x81, 0x00)
 
+OP1M(XCHG, 0x87)
+OP1R(XCHG, 0x87)
+//OP1I(XCHG, xxx, xxx)
+
+OP1M(SUB, 0x29)
+OP1R(SUB, 0x2B)
+OP1I(SUB, 0x81, 0x05)
+
 OP1M(AND, 0x21)
 OP1R(AND, 0x23)
 OP1I(AND, 0x81, 0x04)
@@ -205,6 +213,8 @@ OP1I(AND, 0x81, 0x04)
 OP1X(MUL, 0xF7, 0x04)
 // EMIT_X_R(MUL, RBX) // mul rbx
 // EMIT_X_M(MUL, RBX) // mul [rbx]
+
+OP1X(DIV, 0xF7, 0x06)
 
 // JMP incondicional:
 OP1I(JMP, 0xE9, 0x00)
@@ -220,8 +230,8 @@ OP2CI(J, 0x80)
     call(ptr_sc, Emit32, source_inmmediate);
 
 #define EMIT_MOV_R_I(ptr_sc, destination, source_inmmediate) \
-    EmitRex(ptr_sc, destination, 0); \
-    call(ptr_sc, Emit8, 0xB8); \
+    EmitRex(ptr_sc, 0, destination); \
+    call(ptr_sc, Emit8, (0xB8 + (destination & 7))); \
     call(ptr_sc, Emit64, source_inmmediate);
 
 #define EMIT_MOV_RAX_OFF(ptr_sc, source_offset) \
