@@ -1,7 +1,7 @@
 #ifndef AMD64_H
 #define AMD64_H
 
-#include "global.h"
+#include "x86/global_x86.h"
 
 /**
  * @brief Registers
