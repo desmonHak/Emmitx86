@@ -29,11 +29,11 @@ MODE_GEN_LIB ?= release
 ifeq ($(MODE_GEN_LIB),debug)
   CFLAGS := $(CFLAGS_DEBUG)
 else
-  ifeq ($(MODE_GEN_LIB),gprof)
-    CFLAGS := $(CFLAGS_DEBUG) -pg -fprofile-arcs -fprofile-arcs -g
-  else
-    CFLAGS := $(CFLAGS_F)
-  endif
+	ifeq ($(MODE_GEN_LIB),gprof)
+		CFLAGS := $(CFLAGS_DEBUG) -pg -fprofile-arcs -fprofile-arcs -g
+	else
+		CFLAGS := $(CFLAGS_F)
+	endif
 endif
 
 
