@@ -1,7 +1,7 @@
 #ifndef EMMIT_GLOBAL_X86_H
 #define EMMIT_GLOBAL_X86_H
 
-#include "global.h"
+#include "global_emmit.h"
 
 
 typedef enum ConditionCode {

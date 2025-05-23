@@ -1,7 +1,7 @@
 #ifndef EMMIT_GLOBAL_C
 #define EMMIT_GLOBAL_C
 
-#include "global.h"
+#include "global_emmit.h"
 
 static void Emit8(shellcode_t* code, uint8_t byte) {
     if (code->capacity <= code->size + sizeof(uint8_t)) {
