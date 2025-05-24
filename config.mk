@@ -1,4 +1,3 @@
-CC 			  = gcc
 ARR			  = ar
 
 VESRION_C     = 11
@@ -12,7 +11,7 @@ PATH_COLORS		  = $(PATH_DEBUG)/colors-C-C-plus-plus
 LINKER_FLAGS  	  =  -L. -lEmmitx86
 
 INCLUDE_FLAGS = -I. -I$(PATH_INCLUDE)
-GLOBAL_CFLAGS = -std=c$(VESRION_C) $(INCLUDE_FLAGS) -masm=intel \
+GLOBAL_CFLAGS = -std=c$(VESRION_C) $(INCLUDE_FLAGS)\
 				-D_ExceptionHandler -fdiagnostics-color=always -D_GNU_SOURCE $(DEBUG_LINUX)
 
 CFLAGS_F  	  =  $(GLOBAL_CFLAGS) -O3 -Wno-unused-parameter \
@@ -42,6 +41,8 @@ ARR_FLAGS     = -rc
 CFLAGS_EXAMPLES = $(CFLAGS) -save-temps -g -D DEBUG_ENABLE $(LINKER_FLAGS)
 
 # Buscar todos los archivos .c en subdirectorios de src/x86 (un nivel)
-SOURCES   := $(wildcard $(PATH_SRC)/x86/*/*.c) $(wildcard $(PATH_SRC)/*.c)
+SOURCES   := 	$(wildcard $(PATH_SRC)/x86/*/*.c) 	\
+				$(wildcard $(PATH_SRC)/*.c)			\
+				$(wildcard $(PATH_SRC)/arm/*/*.c)
 # Generar la lista de objetos a partir de los .c encontrados. Por ejemplo, src/x86/amd64/amd64.c -> src/x86/amd64/amd64.o
 OBJECTS   := $(SOURCES:.c=.o)

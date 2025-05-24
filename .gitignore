@@ -61,3 +61,7 @@ dkms.conf
 examples/*.asm
 examples/*.txt
 examples/code.exe.i64
+
+# archivos para la emulacion de aarch64:
+*.iso
+*.img

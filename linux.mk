@@ -1,3 +1,5 @@
+UPLOAD_ANDROID =
+CC			 = gcc
 TARGET 		 = libEmmitx86
 RM 			 = rm
 RMFLAGS 	 = -f -v

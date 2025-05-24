@@ -1,6 +1,7 @@
 #ifndef EMMIT_GLOBAL_H
 #define EMMIT_GLOBAL_H
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -54,6 +55,38 @@ typedef struct shellcode_t {
 
 shellcode_t init_shellcode();
 
+#define op_reg(operation) Emit_##operation##_R
+#define OP1R(operation, opcode)                              \
+void static inline op_reg(operation)(shellcode_t* code) {    \
+    call(code, Emit8, opcode);                               \
+}
+
+#define op_mem(operation) Emit_##operation##_M
+#define OP1M(operation, opcode)                              \
+void static inline op_mem(operation)(shellcode_t* code) {    \
+    call(code, Emit8, opcode);                               \
+}
+
+#define extension(operation) extension_##operation##_I
+#define op_inmed(operation) Emit_##operation##_I
+#define OP1I(operation, opcode, extension_val)                   \
+void static inline op_inmed(operation)(shellcode_t* code) {  \
+    call(code, Emit8, opcode);                               \
+}                                                            \
+enum { extension(operation) = extension_val};
+
+#define op_x(operation) Emit_##operation##_X
+#define OP1X(operation, opcode, extension_val)                   \
+void static inline op_x(operation)(shellcode_t* code) {  \
+    call(code, Emit8, opcode);                               \
+}                                                            \
+enum { extension_##operation##_X = extension_val};
+
+// https://mailund.dk/posts/macro-metaprogramming/
+// macro para las instrucciones de longitud de opcode variable las cuales
+// no son necesarias de procesar(como cpuid que se puede emitir sin ningun pro-
+// cesamiento)
+#define op_inm(operation) Emit_##operation##_INM
 
 // macros recursivas para poder aplicar una func a cada arg de una macro dada
 // se necesita tabtas de estas macros como args queremos soportar en nuestra 
@@ -77,6 +110,7 @@ GET_MACRO(__VA_ARGS__, APPLY_TO_EACH_5, APPLY_TO_EACH_4, APPLY_TO_EACH_3, \
 void static inline op_inm(operation)(shellcode_t* code) {  \
     APPLY_TO_EACH(procesar, __VA_ARGS__);                    \
 }
+#define OPGENERATE(...) APPLY_TO_EACH(procesar, __VA_ARGS__);
 
 
 #endif

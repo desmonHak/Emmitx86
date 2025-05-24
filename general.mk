@@ -7,7 +7,7 @@ generate_lib: $(TARGET).a
 all: $(TARGET).a
 	$(MAKE) -C . -f $(MAKE_NAME) examples
 
-TESTS = code code1  
+TESTS = code code1 code_arm
 
 # Regla principal que genera todos los tests
 examples: generate_lib $(addprefix $(PATH_EXAMPLES)/, $(addsuffix .$(EXTENSION), $(TESTS)))
@@ -16,6 +16,7 @@ examples: generate_lib $(addprefix $(PATH_EXAMPLES)/, $(addsuffix .$(EXTENSION),
 # Regla patrón: compila cada test a partir de su fuente .c
 $(PATH_EXAMPLES)/%.$(EXTENSION): $(PATH_EXAMPLES)/%.c
 	$(CC) $< $(CFLAGS_EXAMPLES) -o $@ 
+	$(UPLOAD_ANDROID)
 
 
 $(TARGET).a: $(OBJECTS)

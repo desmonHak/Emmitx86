@@ -48,42 +48,6 @@ void static inline op_cond(operation)(shellcode_t* code, ConditionCode condition
     call(code, Emit8, opcode + condition_code); \
 }
 
-#define op_reg(operation) Emit_##operation##_R
-#define OP1R(operation, opcode)                              \
-void static inline op_reg(operation)(shellcode_t* code) {    \
-    call(code, Emit8, opcode);                               \
-}
-
-#define op_mem(operation) Emit_##operation##_M
-#define OP1M(operation, opcode)                              \
-void static inline op_mem(operation)(shellcode_t* code) {    \
-    call(code, Emit8, opcode);                               \
-}
-
-#define extension(operation) extension_##operation##_I
-#define op_inmed(operation) Emit_##operation##_I
-#define OP1I(operation, opcode, extension_val)                   \
-void static inline op_inmed(operation)(shellcode_t* code) {  \
-    call(code, Emit8, opcode);                               \
-}                                                            \
-enum { extension(operation) = extension_val};
-
-#define op_x(operation) Emit_##operation##_X
-#define OP1X(operation, opcode, extension_val)                   \
-void static inline op_x(operation)(shellcode_t* code) {  \
-    call(code, Emit8, opcode);                               \
-}                                                            \
-enum { extension_##operation##_X = extension_val};
-
-// https://mailund.dk/posts/macro-metaprogramming/
-// macro para las instrucciones de longitud de opcode variable las cuales
-// no son necesarias de procesar(como cpuid que se puede emitir sin ningun pro-
-// cesamiento)
-#define op_inm(operation) Emit_##operation##_INM
-
-
-
-
 
 
 // instrucciones:

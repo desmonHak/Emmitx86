@@ -1,5 +1,6 @@
 #include "x86/amd64/amd64.h"
 
+#ifdef _WIN32
 #include <windows.h>
 
 
@@ -453,3 +454,9 @@ int main(int argc, char **argv){
 
 
 }
+#else
+int main() {
+    puts("Este codigo usa Windows.h");
+    return 0;
+}
+#endif
