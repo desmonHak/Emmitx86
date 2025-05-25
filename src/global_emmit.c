@@ -48,6 +48,7 @@ static void expand(shellcode_t* code) {
  * @param code codigo a liberar
  */
 static void freeSC(shellcode_t* code){
+    if (code == NULL) return;
     if (code->code != NULL) {
         free(code->code);
     }  
